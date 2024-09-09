@@ -31,39 +31,91 @@ ENTRADAS E SAÍDAS
 
     //////////////////////////////////////////////////////////////
 
-número 	bioma 	     tamanho total 	animais existentes
-1 	     savana 	     10 	          3 macacos
-2 	     floresta 	     5 	          vazio
-3 	     savana e rio 	7 	          1 gazela
-4 	     rio 	          8 	          vazio
-5 	     savana 	     9 	          1 leão
+número 	bioma 	       tamanho total 	animais existentes
+1 	    savana 	       10 	          3 macacos
+2 	    floresta 	     5 	            vazio
+3 	    savana e rio   7 	            1 gazela
+4 	    rio 	         8 	            vazio
+5 	    savana 	       9 	            1 leão
 
 
 O zoológico só está habilitado a tratar dos animais abaixo. A tabela mostra o espaço que cada indivíduo ocupa e em quais biomas se adapta.
 
 espécie 	 tamanho 	bioma
-LEAO 	 3 	     savana
-LEOPARDO 	 2 	     savana
-CROCODILO  3 	     rio
-MACACO 	 1 	     savana ou floresta
-GAZELA 	 2 	     savana
-HIPOPOTAMO 4 	     savana ou rio
+LEAO 	     3 	      savana
+LEOPARDO 	 2 	      savana
+CROCODILO  3 	      rio
+MACACO 	   1 	      savana ou floresta
+GAZELA 	   2 	      savana
+HIPOPOTAMO 4 	      savana ou rio
 
 */
 
 class RecintosZoo {
   constructor() {
-    // definir recintos existentes
-    this.recintos = {};
-
-    //definir caracteristicas dos animais
-    this.animaisValidos = {};
+    // definir recintos existentes e que já contenham animais nos espaços
+    this.recintos = [
+      {
+        num: 1,
+        bioma: "savana",
+        espacoLivre: 7,
+        total: 10,
+        animaisIncluidos: [{ especie: "MACACO", quantidade: 3 }],
+      },
+      {
+        num: 2,
+        bioma: "floresta",
+        espacoLivre: 5,
+        total: 5,
+        animaisIncluidos: [],
+      },
+      {
+        num: 3,
+        bioma: "savana e rio",
+        espacoLivre: 5,
+        total: 7,
+        animaisIncluidos: [{ especie: "GAZELA", quantidade: 1 }],
+      },
+      { num: 4, bioma: "rio", espacoLivre: 8, total: 8, animaisIncluidos: [] },
+      {
+        num: 5,
+        bioma: "savana",
+        espacoLivre: 6,
+        total: 9,
+        animaisIncluidos: [{ especie: "LEAO", quantidade: 1 }],
+      },
+    ];
+    this.animaisValidos = {
+      LEAO: { tamanho: 3, biomas: ["savana"], carnivoro: true },
+      LEOPARDO: { tamanho: 2, biomas: ["savana"], carnivoro: true },
+      CROCODILO: { tamanho: 3, biomas: ["rio"], carnivoro: true },
+      MACACO: { tamanho: 1, biomas: ["savana", "floresta"], carnivoro: false },
+      GAZELA: { tamanho: 2, biomas: ["savana"], carnivoro: false },
+      HIPOPOTAMO: { tamanho: 4, biomas: ["savana", "rio"], carnivoro: false },
+    };
   }
-
+  //definir caracteristicas dos animais
   analisaRecintos(especie, quantidade) {
     //resposta pra o recintos-zoo.test.js
-    return;
+    const animalEhValido = this.animaisValidos[especie];
+    if (!animalEhValido) {
+      return { erro: "Animal inváldido." };
+    }
+
+    if (quantidade <= 0 || typeof quantidade != "number") {
+      return { erro: "Quantidade inváldida." };
+    }
+
+    return animalEhValido;
   }
 }
 
-export { RecintosZoo as RecintosZoo };
+const x = new RecintosZoo();
+
+// ambiente de teste
+
+console.log(x.analisaRecintos("MACACO", 1)); // funcional
+console.log(x.analisaRecintos("ANIMAL ERRADO", 1)); // caso animal esteja errado
+console.log(x.analisaRecintos("MACACO", "NUMERO ERRADO")); // caso quantidade esteja errado
+
+// export { RecintosZoo as RecintosZoo };
