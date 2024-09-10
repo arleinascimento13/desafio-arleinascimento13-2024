@@ -54,6 +54,8 @@ HIPOPOTAMO 4 	      savana ou rio
 class RecintosZoo {
   constructor() {
     // definir recintos existentes e que já contenham animais nos espaços
+    //definir caracteristicas dos animais
+
     this.recintos = [
       {
         num: 1,
@@ -94,9 +96,12 @@ class RecintosZoo {
       HIPOPOTAMO: { tamanho: 4, biomas: ["savana", "rio"], carnivoro: false },
     };
   }
-  //definir caracteristicas dos animais
+
   analisaRecintos(especie, quantidade) {
     //resposta pra o recintos-zoo.test.js
+
+    especie = especie.toUpperCase();
+
     const infoAnimalSelecionado = this.animaisValidos[especie];
     if (!infoAnimalSelecionado) {
       return { erro: "Animal inváldido." };
@@ -117,13 +122,50 @@ class RecintosZoo {
         const especieAnimal = this.animaisValidos[animal.especie];
         return espaco + especieAnimal.tamanho * animal.quantidade;
       }, 0);
+      if (!recintosComEspaco) {
+        return { erro: "Quantidade de recintos inválida." };
+      }
+
+      // regras específicas para convivência
+
+      if (infoAnimalSelecionado.carnivoro) {
+        if (
+          recinto.animal.length > 0 &&
+          recinto.animal[0].especie !== especie
+        ) {
+          return false;
+        }
+      }
+
+      // hipo so fica com outros animais na savana e rio
+      if (especie === "HIPOPOTAMO") {
+        if (recinto.bioma !== "savana e rio" && recinto.animal.length > 0) {
+          return false;
+        }
+      }
+
+      if (
+        especie === "MACACO" &&
+        recinto.animais.length === 0 &&
+        quantidade < 2
+      ) {
+        // macacos nao pode ficar so
+        return false;
+      }
+
+      if (recinto.animais.length > 0 && recinto.animais[0].espaco != especie) {
+        espacoJaOcupado += 1;
+      }
+
+      return (
+        recinto.total - espacoJaOcupado >=
+        (infoAnimalSelecionado.tamanho = quantidade)
+      );
     });
 
-    if (!recintosComEspaco) {
-      return { erro: "Quantidade de recintos inválida." };
-    }
+    
 
-    return recintoValidos;
+    return;
   }
 }
 
