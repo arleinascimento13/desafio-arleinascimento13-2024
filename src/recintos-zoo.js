@@ -97,8 +97,8 @@ class RecintosZoo {
   //definir caracteristicas dos animais
   analisaRecintos(especie, quantidade) {
     //resposta pra o recintos-zoo.test.js
-    const animalEhValido = this.animaisValidos[especie];
-    if (!animalEhValido) {
+    const infoAnimalSelecionado = this.animaisValidos[especie];
+    if (!infoAnimalSelecionado) {
       return { erro: "Animal inváldido." };
     }
 
@@ -106,7 +106,24 @@ class RecintosZoo {
       return { erro: "Quantidade inváldida." };
     }
 
-    return animalEhValido;
+    // filtra o recinto pra o animal
+    const recintoValidos = this.recintos.filter((recinto) =>
+      infoAnimalSelecionado.biomas.includes(recinto.bioma)
+    );
+
+    // mostra a quantidade de recintos que o animal pode ir
+    const recintosComEspaco = this.recintos.filter((recinto) => {
+      const recintoOcupado = this.recintos.reduce((espaco, animal) => {
+        const especieAnimal = this.animaisValidos[animal.especie];
+        return espaco + especieAnimal.tamanho * animal.quantidade;
+      }, 0);
+    });
+
+    if (!recintosComEspaco) {
+      return { erro: "Quantidade de recintos inválida." };
+    }
+
+    return recintoValidos;
   }
 }
 
