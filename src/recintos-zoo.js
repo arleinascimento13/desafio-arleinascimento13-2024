@@ -1,13 +1,13 @@
 /* REGRAS PARA ENCONTRAR UM RECINTO
 
-    Um animal se sente confortável se está num bioma adequado e com
+    Um lanimaisIncluidos se sente confortável se está num bioma adequado e com
     espaço suficiente para cada indivíduo
     Animais carnívoros devem habitar somente com a própria espécie
     Animais já presentes no recinto devem continuar confortáveis com
     a inclusão do(s) novo(s)
     Hipopótamo(s) só tolera(m) outras espécies estando num recinto
     com savana e rio
-    Um macaco não se sente confortável sem outro animal no recinto,
+    Um macaco não se sente confortável sem outro lanimaisIncluidos no recinto,
     seja da mesma ou outra espécie
     Quando há mais de uma espécie no mesmo recinto, é preciso considerar
     1 espaço extra ocupado
@@ -17,15 +17,15 @@
 
 ENTRADAS E SAÍDAS
 
-    O programa deve receber tipo e quantidade de animal (nessa ordem)
+    O programa deve receber tipo e quantidade de lanimaisIncluidos (nessa ordem)
     O programa deve retornar uma estrutura contendo a lista de todos 
     os recintos viáveis ordenada pelo número do recinto (caso existam)
     e a mensagem de erro (caso exista).
 
     A lista de recintos viáveis deve indicar o espaço livre que restaria
-    após a inclusão do(s) animal(is) e o espaço total, no formato:
+    após a inclusão do(s) lanimaisIncluidos(is) e o espaço total, no formato:
     "Recinto nro (espaço livre: valorlivre total: valortotal)"
-    Caso animal informado seja inválido, apresentar erro "Animal inválido"
+    Caso lanimaisIncluidos informado seja inválido, apresentar erro "lanimaisIncluidos inválido"
     Caso quantidade informada seja inválida, apresentar erro "Quantidade inválida"
     Caso não haja recinto possível, apresentar erro "Não há recinto viável"
 
@@ -54,7 +54,7 @@ HIPOPOTAMO 4 	      savana ou rio
 class RecintosZoo {
   constructor() {
     // definir recintos existentes e que já contenham animais nos espaços
-    //definir caracteristicas dos animais
+    // definir características dos animais
 
     this.recintos = [
       {
@@ -98,83 +98,100 @@ class RecintosZoo {
   }
 
   analisaRecintos(especie, quantidade) {
-    //resposta pra o recintos-zoo.test.js
+    // resposta para o recintos-zoo.test.js
 
     especie = especie.toUpperCase();
 
     const infoAnimalSelecionado = this.animaisValidos[especie];
     if (!infoAnimalSelecionado) {
-      return { erro: "Animal inváldido." };
+      return { erro: "Animal inválido" };
     }
 
-    if (quantidade <= 0 || typeof quantidade != "number") {
-      return { erro: "Quantidade inváldida." };
+    if (quantidade <= 0 || typeof quantidade !== "number") {
+      return { erro: "Quantidade inválida" };
     }
 
-    // filtra o recinto pra o animal
+    // filtra o recinto para o animal
     const recintoValidos = this.recintos.filter((recinto) =>
-      infoAnimalSelecionado.biomas.includes(recinto.bioma)
+      infoAnimalSelecionado.biomas.some((bioma) =>
+        recinto.bioma.includes(bioma)
+      )
     );
 
     // mostra a quantidade de recintos que o animal pode ir
-    const recintosComEspaco = this.recintos.filter((recinto) => {
-      const recintoOcupado = this.recintos.reduce((espaco, animal) => {
-        const especieAnimal = this.animaisValidos[animal.especie];
-        return espaco + especieAnimal.tamanho * animal.quantidade;
-      }, 0);
-      if (!recintosComEspaco) {
-        return { erro: "Quantidade de recintos inválida." };
-      }
+    const recintosComEspaco = recintoValidos.filter((recinto) => {
+      const espacoOcupado = recinto.animaisIncluidos.reduce(
+        (espaco, ANIMAL) => {
+          const especieANIMAL = this.animaisValidos[ANIMAL.especie];
+          return espaco + especieANIMAL.tamanho * ANIMAL.quantidade;
+        },
+        0
+      );
 
       // regras específicas para convivência
-
-      if (infoAnimalSelecionado.carnivoro) {
-        if (
-          recinto.animal.length > 0 &&
-          recinto.animal[0].especie !== especie
-        ) {
-          return false;
-        }
+      if (
+        infoAnimalSelecionado.carnivoro &&
+        recinto.animaisIncluidos.length > 0
+      ) {
+        return false;
       }
 
-      // hipo so fica com outros animais na savana e rio
-      if (especie === "HIPOPOTAMO") {
-        if (recinto.bioma !== "savana e rio" && recinto.animal.length > 0) {
-          return false;
-        }
+      // hipopótamo só fica com outros animais na savana e rio
+      if (
+        especie === "HIPOPOTAMO" &&
+        recinto.bioma !== "savana e rio" &&
+        recinto.animaisIncluidos.length > 0
+      ) {
+        return false;
       }
 
       if (
         especie === "MACACO" &&
-        recinto.animais.length === 0 &&
+        recinto.animaisIncluidos.length === 0 &&
         quantidade < 2
       ) {
-        // macacos nao pode ficar so
+        // macacos não podem ficar sozinhos
         return false;
       }
 
-      if (recinto.animais.length > 0 && recinto.animais[0].espaco != especie) {
-        espacoJaOcupado += 1;
-      }
-
-      return (
-        recinto.total - espacoJaOcupado >=
-        (infoAnimalSelecionado.tamanho = quantidade)
-      );
+      return recinto.espacoLivre >= infoAnimalSelecionado.tamanho * quantidade;
     });
 
-    
+    if (recintosComEspaco.length === 0) {
+      return { erro: "Não há recinto viável" };
+    }
 
-    return;
+    // return {
+    //   recintosViaveis: recintosComEspaco.map(
+    //     (recinto) =>
+    //       `Recinto ${recinto.num} (espaço livre: ${
+    //         recinto.espacoLivre -
+    //         recinto.animaisIncluidos.reduce((espaco, ANIMAL) => {
+    //           const infoANIMAL = this.animaisValidos[ANIMAL.especie];
+    //           return espaco + infoANIMAL.tamanho * ANIMAL.quantidade;
+    //         }, 0)
+    //       } total: ${recinto.total})`
+    //   ),
+
+    return {
+      recintosViaveis: recintosComEspaco.map((recinto) => {
+        const espacoOcupado = recinto.animaisIncluidos.reduce(
+          (espaco, ANIMAL) => {
+            const infoANIMAL = this.animaisValidos[ANIMAL.especie];
+            return espaco + infoANIMAL.tamanho * ANIMAL.quantidade;
+          },
+          0
+        );
+
+        return `Recinto ${recinto.num} (espaço livre: ${
+          recinto.espacoLivre -
+          espacoOcupado -
+          infoAnimalSelecionado.tamanho * quantidade
+        } total: ${recinto.total})`;
+      }),
+    };
+
   }
 }
 
-const x = new RecintosZoo();
-
-// ambiente de teste
-
-console.log(x.analisaRecintos("MACACO", 1)); // funcional
-console.log(x.analisaRecintos("ANIMAL ERRADO", 1)); // caso animal esteja errado
-console.log(x.analisaRecintos("MACACO", "NUMERO ERRADO")); // caso quantidade esteja errado
-
-// export { RecintosZoo as RecintosZoo };
+export { RecintosZoo as RecintosZoo };
